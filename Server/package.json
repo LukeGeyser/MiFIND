@@ -2,21 +2,31 @@
   "name": "minet.mifind",
   "version": "1.0.0",
   "description": "Server side for API used for the MiFIND System",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "nodemon src/server.js",
+    "dev": "nodemon src/server.js"
   },
   "author": "Luke Geyser",
   "license": "ISC",
   "dependencies": {
+    "@hapi/joi": "^17.1.1",
     "async": "^3.2.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
+    "knex": "^0.21.15",
     "mysql": "^2.18.1",
-    "nodemon": "^2.0.6"
+    "nodemon": "^2.0.6",
+    "npm-upgrade": "^2.0.4",
+    "objection": "^2.2.6"
+  },
+  "devDependencies": {
+    "eslint": "^7.17.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1"
   }
 }

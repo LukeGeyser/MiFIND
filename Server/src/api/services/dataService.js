@@ -21,30 +21,23 @@ function createUser(username, password, callback){
     });
 }
 
-// function getUser(username){
-//     return new Promise(function (resolve) {
-//         setTimeout(function () {
-//             conn.query(`SELECT * FROM Authentication WHERE UserName='${username}' LIMIT 1`, function (err, result) {
-//                 if (err) throw err.message;
-//                 resolve(result);
-//             });
-//         }, 0);
-//     });
-// }
-
 async function getUser(UserName){
     return new Promise(function (resolve) {
         setTimeout(function () {
-            // db(tableNames.Authentication)
-            //     .select('*')
-            //     .where({
-            //         UserName: UserName,
-            //     }).first().then(data => {
-            //         resolve(data);
-            //     });
             db.select('*').from(tableNames.Authentication).where('Username', UserName)
-                .then( (data) => {
-                    resolve(data);
+                .then(function (data) {
+                    resolve(data[0]);
+                });
+        }, 0);
+    });
+}
+
+async function getUserById(userId){
+    return new Promise(function (resolve) {
+        setTimeout(function () {
+            db.select('*').from(tableNames.Authentication).where('UserId', userId)
+                .then(function (data) {
+                    resolve(data[0]);
                 });
         }, 0);
     });
@@ -110,6 +103,7 @@ function addMiDEVICEData(schema){
 module.exports = {
     createUser: createUser,
     getUser: getUser,
+    getUserById: getUserById,
     updateUserPwd: updateUserPwd,
     storeToken: storeToken,
     getToken: getToken,

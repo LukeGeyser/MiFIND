@@ -2,6 +2,6 @@
     "todo-tree.general.debug": true,
     "todo-tree.general.enableFileWatcher": true,
     "todo-tree.general.statusBar": "total",
-    "editor.fontSize": 24,
-    "editor.fontFamily": "Anonymous Pro"
+    "editor.fontFamily": "Source Code Pro",
+    "terminal.integrated.fontFamily": "Consolas"
 }

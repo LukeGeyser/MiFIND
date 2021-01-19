@@ -1,4 +1,4 @@
-var crypto = require("crypto");
+var crypto = require('crypto');
 var bcrypt = require('bcryptjs');
 
 var express = require('express');
@@ -28,9 +28,55 @@ router.post('/create', async function (req, res) {
     });
 });
 
+router.post('/login', async function (req, res) {
+
+    // Getting the Username and Password from response body
+    const { username } = req.body;
+    const { password } = req.body;
+
+    const userObject = await dataService.getUser(username);
+
+    // TODO: CHECK USERNAME AND PASSWORD
+
+    if (!userObject) {
+        // Response with Invalide Creds
+        return res.status(403).send({ error: 'No such user found' }); // TODO: Make this error Response more fleshed out
+    }
+
+    var isValidPwd = await clientService.validatePassword(password, userObject.Password);
+
+    if (!isValidPwd)
+        res.status(401).send({ error: 'No such user found' }); // TODO: Make this error Response more fleshed out
+    else {
+
+        var refreshToken = await authService.generateRefreshAuthToken(userObject.UserId, userObject.TokenVersion);
+        var token = await authService.generateAuthToken(userObject.UserId);
+
+        await authService.setRefreshToken(refreshToken, res);
+
+        var tokenCreationDate = new Date();
+
+        var tokenExpireDate = new Date(tokenCreationDate.getTime() + 60 * 60000);
+
+        var expiresIn = Math.abs(tokenExpireDate - tokenCreationDate) / 1000;
+
+        res.status(200).send({
+            auth_status: 'Authorized',
+            access_token: token,
+            token_type: 'Bearer',
+            expires_in: expiresIn,
+            userName: username,
+            '.issued': tokenCreationDate.toUTCString(),
+            '.expires': tokenExpireDate.toUTCString(),
+        });
+
+    }
+});
+
 router.post('/changePassword', async function (req, res) {
 
     // Checking for Valid Token
+    var isValidToken = null;
     try {
         var header = req.headers.authorization || '';   // get the auth header
         var auth = header.split(/\s+/) || '';
@@ -46,7 +92,7 @@ router.post('/changePassword', async function (req, res) {
                 return res.status(401).send({ error: "Incorrect Auth Type" }); // TODO: Make this error Response more fleshed out
             }
 
-            var isValidToken = await authService.authToken(token);
+            isValidToken = await authService.checkAuthToken(token);
 
             if (!isValidToken) 
                 return res.status(401).send({ error: "Token is not valid" }); // TODO: Make this error Response more fleshed out
@@ -57,7 +103,7 @@ router.post('/changePassword', async function (req, res) {
     
         
     } catch (error) {
-        res.status(500).send({error: error});
+        return res.status(500).send({error: error});
     }
 
     // Checking for Valid Credentials
@@ -68,13 +114,21 @@ router.post('/changePassword', async function (req, res) {
 
         var userObject = await dataService.getUser(username);
 
-        if (Object.keys(userObject).length <= 0){
+        if (!userObject) {
             // Response with Invalide Creds
-            res.status(403).send({ error: "No such user found" }); // TODO: Make this error Response more fleshed out
-            return;
+            return res.status(403).send({ error: 'No such user found' }); // TODO: Make this error Response more fleshed out
         }
 
-        var pwdResponse = await clientService.validatePassword(oldpassword, userObject[0].Password);
+        if (userObject.UserId !== isValidToken.userId){
+            return res.status(401).send(
+                { 
+                    authentication: 'false', 
+                    reason: 'Token does not belong to a user',
+                    access_token: '' 
+                });
+        }
+
+        var pwdResponse = await clientService.validatePassword(oldpassword, userObject.Password);
 
         if (!pwdResponse){
             res.status(403).send({ error: "Username and Password is incorrect" }); // TODO: Make this error Response more fleshed out
@@ -82,7 +136,7 @@ router.post('/changePassword', async function (req, res) {
         } else {
             var hash = await clientService.getPasswordHash(newpassword);
 
-            var response = await dataService.updateUserPwd(userObject[0].UserId, hash);
+            var response = await dataService.updateUserPwd(userObject.UserId, hash);
 
             if (!response){
                 res.status(500).send({ error: "Something went wrong" }); // TODO: Make this error Response more fleshed out
@@ -96,5 +150,6 @@ router.post('/changePassword', async function (req, res) {
     }
 
 });
+
 
 module.exports = router;

@@ -1,5 +1,4 @@
 const express = require('express');
-const app = express();
 const bodyParser = require('body-parser');
 require('dotenv').config();
 const api = require('./api');
@@ -8,6 +7,10 @@ const authService = require('./api/services/authService');
 
 // authService.generatePublicPrivateKeysForToken();
 // authService.generatePublicPrivateKeysForRefreshToken();
+
+const app = express();
+
+app.set('trust proxy', 1); // If App is behind proxy, this is needed
 
 app.use(
   bodyParser.urlencoded({

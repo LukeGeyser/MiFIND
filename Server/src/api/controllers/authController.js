@@ -1,14 +1,18 @@
 const express = require('express');
-
 const router = express.Router();
 const bodyParser = require('body-parser');
-
-router.use(bodyParser.urlencoded({ extended: false }));
-router.use(bodyParser.json());
-
 const dataService = require('../services/dataService');
 const authService = require('../services/authService');
 const clientService = require('../services/clientService');
+const rateLimit = require('express-rate-limit');
+
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 Mins
+//   max: 100 // Limit each IP to 100 requests per windowMs
+// });
+
+router.use(bodyParser.urlencoded({ extended: false }));
+router.use(bodyParser.json());
 
 router.post('/login', async (req, res) => {
   // Getting the Username and Password from response body
@@ -122,6 +126,26 @@ router.post('/refresh_token', async (req, res) => {
       '.issued': tokenCreationDate.toUTCString(),
       '.expires': tokenExpireDate.toUTCString(),
   });
+});
+
+// TODO: NEED TO ADD SECURITY BEHIND THIS, ONLY AUTHORIZED USERS CAN ACCESS THIS ROUTE
+router.post('/invalidate_token', async (req, res) => {
+
+  // TODO: NEED TO AUTH USER TRYING TO GET INTO THIS ROUTE
+
+  const { username } = req.body;
+
+  const userObject = await dataService.getUser(username);
+
+  if (!userObject) {
+    // Response with Invalide Creds
+    return res.status(403).send({ error: 'No such user found' }); // TODO: Make this error Response more fleshed out
+  }
+
+  userObject.TokenVersion += 1;
+  await dataService.updateUserTokenVersion(userObject);
+
+  return res.status(200).send();
 });
 
 module.exports = router;

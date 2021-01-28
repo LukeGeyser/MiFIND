@@ -43,6 +43,17 @@ async function getUserById(userId){
     });
 }
 
+async function updateUserTokenVersion(user){
+    return new Promise(function (resolve) {
+        setTimeout(function () {
+            db(tableNames.Authentication).where({ UserId: user.UserId.toString()}).update({TokenVersion: user.TokenVersion}, ['UserId', 'TokenVersion']).then((data) => {
+                console.log(data);
+                resolve(data);
+            });
+        }, 0);
+    });
+}
+
 function updateUserPwd(userID, pwd){
     return new Promise(function (resolve) {
         setTimeout(function () {
@@ -100,14 +111,20 @@ function addMiDEVICEData(schema){
     });
 }
 
+// SELECT * 
+// FROM Attributes 
+// INNER JOIN SensorAttributes ON Attributes.Id = SensorAttributes.AttributeId 
+// WHERE SensorAttributes.SensorId = 1
+
 module.exports = {
     createUser: createUser,
     getUser: getUser,
     getUserById: getUserById,
     updateUserPwd: updateUserPwd,
+    updateUserTokenVersion: updateUserTokenVersion,
     storeToken: storeToken,
     getToken: getToken,
     removeToken: removeToken,
     addMiDEVICEData: addMiDEVICEData,
-}
+};
 

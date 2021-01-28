@@ -28,83 +28,10 @@ router.post('/create', async function (req, res) {
     });
 });
 
-router.post('/login', async function (req, res) {
-
-    // Getting the Username and Password from response body
-    const { username } = req.body;
-    const { password } = req.body;
-
-    const userObject = await dataService.getUser(username);
-
-    // TODO: CHECK USERNAME AND PASSWORD
-
-    if (!userObject) {
-        // Response with Invalide Creds
-        return res.status(403).send({ error: 'No such user found' }); // TODO: Make this error Response more fleshed out
-    }
-
-    var isValidPwd = await clientService.validatePassword(password, userObject.Password);
-
-    if (!isValidPwd)
-        res.status(401).send({ error: 'No such user found' }); // TODO: Make this error Response more fleshed out
-    else {
-
-        var refreshToken = await authService.generateRefreshAuthToken(userObject.UserId, userObject.TokenVersion);
-        var token = await authService.generateAuthToken(userObject.UserId);
-
-        await authService.setRefreshToken(refreshToken, res);
-
-        var tokenCreationDate = new Date();
-
-        var tokenExpireDate = new Date(tokenCreationDate.getTime() + 60 * 60000);
-
-        var expiresIn = Math.abs(tokenExpireDate - tokenCreationDate) / 1000;
-
-        res.status(200).send({
-            auth_status: 'Authorized',
-            access_token: token,
-            token_type: 'Bearer',
-            expires_in: expiresIn,
-            userName: username,
-            '.issued': tokenCreationDate.toUTCString(),
-            '.expires': tokenExpireDate.toUTCString(),
-        });
-
-    }
-});
-
-router.post('/changePassword', async function (req, res) {
+router.post('/changePassword', authService.AuthenticateToken, async function (req, res) {
 
     // Checking for Valid Token
-    var isValidToken = null;
-    try {
-        var header = req.headers.authorization || '';   // get the auth header
-        var auth = header.split(/\s+/) || '';
-        
-        if (header == '')
-            return res.status(401).send({ error: "Invalid Authorization" });
-
-        if (auth != ''){
-            var authType = auth[0];
-            var token = auth[1];
-
-            if (authType != "Bearer") {
-                return res.status(401).send({ error: "Incorrect Auth Type" }); // TODO: Make this error Response more fleshed out
-            }
-
-            isValidToken = await authService.checkAuthToken(token);
-
-            if (!isValidToken) 
-                return res.status(401).send({ error: "Token is not valid" }); // TODO: Make this error Response more fleshed out
-
-        } else {
-            return res.status(401).send({ error: "No token provided" }); // TODO: Make this error Response more fleshed out
-        }
-    
-        
-    } catch (error) {
-        return res.status(500).send({error: error});
-    }
+    var isValidToken = req.TokenData;
 
     // Checking for Valid Credentials
     try {

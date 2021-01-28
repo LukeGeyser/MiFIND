@@ -17,6 +17,10 @@ var schema = Joi.object({
     chargeStatus: Joi.number()
 });
 
+var testSchema = Joi.object({
+    
+});
+
 module.exports = {
     schema: schema
 };

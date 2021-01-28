@@ -113,12 +113,31 @@ function generateRefreshAuthToken(userId, tokenVersion){
 function setRefreshToken(token, res){
     res.cookie(process.env.REFRESH_TOKEN_ID, token, {
         httpOnly: true,
-        path: '/api/v1/refreshToken',
+        path: '/api/v1/auth/refresh_token',
         expires: new Date(Date.now() + 604800000)
     });
 }
 
-// function 
+async function AuthenticateToken(req, res, next){
+    try {
+        const header = req.headers.authorization;
+        const token = header && header.split(' ')[1];
+
+        if (token == null) 
+            return res.status(401).send({ error: "Invalid Authorization" });
+
+        const isValidToken = await checkAuthToken(token);
+
+        if (!isValidToken)
+            return res.status(401).send({ error: "Token is not valid" }); // TODO: Make this error Response more fleshed out
+        
+        req.TokenData = isValidToken;
+        next();
+
+    } catch (error) {
+        return res.status(500).send({error: error});
+    }
+}
 
 module.exports = {
     generatePublicPrivateKeysForToken: generatePublicPrivateKeysForToken,
@@ -127,6 +146,7 @@ module.exports = {
     generateRefreshAuthToken: generateRefreshAuthToken,
     checkAuthToken: checkAuthToken,
     checkRefreshAuthToken: checkRefreshAuthToken,
-    setRefreshToken: setRefreshToken
+    setRefreshToken: setRefreshToken,
+    AuthenticateToken: AuthenticateToken
 };
 

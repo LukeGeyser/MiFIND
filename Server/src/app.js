@@ -1,9 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 require('dotenv').config();
-const api = require('./api');
+const api = require('./api/v1');
 var cookieParser = require('cookie-parser');
-const authService = require('./api/services/authService');
+const authService = require('./api/v1/services/authService');
 
 // authService.generatePublicPrivateKeysForToken();
 // authService.generatePublicPrivateKeysForRefreshToken();

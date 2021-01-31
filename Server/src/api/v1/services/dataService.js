@@ -1,7 +1,7 @@
 require('dotenv').config();
 var mysql = require('mysql');
-var db = require('../../db');
-var tableNames = require('../../constants/tableNames');
+var db = require('../../../db');
+var tableNames = require('../../../constants/tableNames');
 
 var conn = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -46,8 +46,7 @@ async function getUserById(userId){
 async function updateUserTokenVersion(user){
     return new Promise(function (resolve) {
         setTimeout(function () {
-            db(tableNames.Authentication).where({ UserId: user.UserId.toString()}).update({TokenVersion: user.TokenVersion}, ['UserId', 'TokenVersion']).then((data) => {
-                console.log(data);
+            db(tableNames.Authentication).where({ UserId: user.UserId.toString()}).update({TokenVersion: user.TokenVersion}).then(function (data) {
                 resolve(data);
             });
         }, 0);

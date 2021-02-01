@@ -1,4 +1,4 @@
-var Joi = require('@hapi/joi');
+var Joi = require('joi');
 
 var schema = Joi.object({
     deviceId: Joi.number().required(),
@@ -15,10 +15,6 @@ var schema = Joi.object({
     batteryVoltage: Joi.number(),
     supplyVoltage: Joi.number(),
     chargeStatus: Joi.number()
-});
-
-var testSchema = Joi.object({
-    
 });
 
 module.exports = {

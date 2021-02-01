@@ -8,5 +8,13 @@ module.exports = {
     GeoFenceUserLookup: 'GeoFenceUserLookup',
     PermissionIndex: 'PermissionIndex',
     Permissions: 'Permissions',
-    SessionTokens: 'SessionTokens'
-}
+    SessionTokens: 'SessionTokens',
+    Groups: 'Groups',
+    Protocols: 'Protocols',
+    SensorAttributes: 'SensorAttributes',
+    SensorGroups: 'SensorGroups',
+    SensorProtocols: 'SensorProtocols',
+    Sensors: 'Sensors',
+    DeviceAttributeData: 'DeviceAttributeData',
+    Attributes: 'Attributes'
+};

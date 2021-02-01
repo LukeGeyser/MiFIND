@@ -10,6 +10,8 @@ const helmet = require('helmet');
 const authController = require('./controllers/authController');
 const userController = require('./controllers/userController');
 const sensorController = require('./controllers/sensorController');
+const groupsController = require('./controllers/groupsController');
+const permissionController = require('./controllers/permissionController');
 const errorHandler = require('./middleware/errorHandler');
 
 const limiter = rateLimit({
@@ -27,6 +29,10 @@ router.use('/auth', limiter, authController);
 router.use('/accounts', userController);
 
 router.use('/sensors', sensorController);
+
+router.use('/groups', groupsController);
+
+router.use('/permissions', permissionController);
 
 router.use(errorHandler.notFound);
 

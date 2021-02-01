@@ -7,7 +7,7 @@ var bodyParser = require('body-parser');
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
-var dataService = require('../services/dataService');
+var dataService = require('../services/dbServices/dbClient');
 var authService = require('../services/authService');
 var clientService = require('../services/clientService');
 

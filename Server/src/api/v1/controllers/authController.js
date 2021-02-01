@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const bodyParser = require('body-parser');
-const dataService = require('../services/dataService');
+const dbClient = require('../services/dbServices/dbClient');
 const authService = require('../services/authService');
 const clientService = require('../services/clientService');
-const rateLimit = require('express-rate-limit');
+const permissions = require('../../../constants/permissions');
+const permissionsMiddleware = require('../middleware/permissionMiddleware');
 
 // const limiter = rateLimit({
 //   windowMs: 15 * 60 * 1000, // 15 Mins
@@ -14,13 +15,13 @@ const rateLimit = require('express-rate-limit');
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
-router.post('/login', async (req, res, next) => {
+router.post('/login', permissionsMiddleware.checkPermissionLogin(permissions.Login), async (req, res, next) => {
   // Getting the Username and Password from response body
   try {
     const { username } = req.body;
     const { password } = req.body;
 
-    const userObject = await dataService.getUser(username);
+    const userObject = await dbClient.getUser(username);
 
     // TODO: CHECK USERNAME AND PASSWORD
 
@@ -35,7 +36,7 @@ router.post('/login', async (req, res, next) => {
       res.status(401).send({ error: 'No such user found' }); // TODO: Make this error Response more fleshed out
     else {
       userObject.TokenVersion += 1;
-      await dataService.updateUserTokenVersion(userObject);
+      await dbClient.updateUserTokenVersion(userObject);
 
       var refreshToken = await authService.generateRefreshAuthToken(userObject.UserId, userObject.TokenVersion);
       var token = await authService.generateAuthToken(userObject.UserId);
@@ -96,7 +97,7 @@ router.post('/refresh_token', async (req, res, next) => {
       });
     }
 
-    var user = await dataService.getUserById(refreshTokenPayload.userId);
+    var user = await dbClient.getUserById(refreshTokenPayload.userId);
 
     if (!user){
       return res.status(404).send({ 
@@ -143,7 +144,7 @@ router.post('/invalidate_token', async (req, res, next) => {
 
     const { username } = req.body;
 
-    const userObject = await dataService.getUser(username);
+    const userObject = await dbClient.getUser(username);
 
     if (!userObject) {
       // Response with Invalide Creds
@@ -151,7 +152,7 @@ router.post('/invalidate_token', async (req, res, next) => {
     }
 
     userObject.TokenVersion += 1;
-    await dataService.updateUserTokenVersion(userObject);
+    await dbClient.updateUserTokenVersion(userObject);
 
     return res.status(200).send();
   } catch (error) {

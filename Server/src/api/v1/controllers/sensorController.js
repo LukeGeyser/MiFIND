@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Joi = require('@hapi/joi');
 const MiDevice = require('../models/mideviceModel');
-const dataservice = require('../services/dataService');
+const dataservice = require('../services/dbServices/dbDevices');
 
 
 router.post('/midevice', async function (req, res) {

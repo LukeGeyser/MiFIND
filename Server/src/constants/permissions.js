@@ -1,0 +1,17 @@
+module.exports = {
+    Login: 'Login',
+    ChangePassword: 'Change Password',
+    RefreshToken: 'Refresh Token',
+    GetGroups: 'Get Groups',
+    AddGroups: 'Add Groups',
+    AddPermissions: 'Add Permission',
+    GetAllPermissions: 'Get All Permissions',
+    GetPermissionForUser: 'Get Permissions For User',
+    AddSensor: 'Add Sensor',
+    GetAllSensors: 'Get All Sensors',
+    GetAllDevices: 'Get All Devices',
+    GetAllDevicesForUser: 'Get All Devices For User',
+    AddPermissionIndex: 'Add Permission Index',
+    GetAllPermissionIndexes: 'Get All Permission Indexes',
+    GetAllUserPermissionIndexes: 'Get All User Permission Indexes',
+};

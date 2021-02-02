@@ -9,6 +9,7 @@ const dbDevice = require('../services/dbServices/dbDevices');
 const permissions = require('../../../constants/permissions');
 const permissionsMiddleware = require('../middleware/permissionMiddleware');
 const authMiddleware = require('../middleware/authTokenMiddleware');
+const { timeout } = require('async');
 
 router.get('/', 
     authMiddleware.AuthenticateToken, 
@@ -37,12 +38,20 @@ router.get('/:imei',
 
             var sensors = await dbDevice.getDevicesSensors(GroupID);
 
-            await Promise.all(sensors.map(async element => {
-                var attributes = await dbDevice.getDevicesAttributes(element.Id);
-                element.Attributes = attributes;
+            await Promise.all(sensors.map(async sensor => {
+                var attributes = await dbDevice.getDevicesAttributes(sensor.Id);
+                
+                sensor.Attributes = attributes;
             }));
 
-            res.status(200).json({
+            sensors.forEach(async sensor => {
+                await Promise.all(sensor.Attributes.map(async attribute => {
+                    var data = await dbDevice.getAttributeValue(attribute.Id);
+                    console.log(data);
+                }));
+            });
+
+            return res.status(200).json({
                 Device: device,
                 Sensors: sensors
             });

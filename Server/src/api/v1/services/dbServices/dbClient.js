@@ -74,7 +74,7 @@ async function updateUserTokenVersion(user){
     });
 }
 
-function updateUserPwd(user, hash){
+async function updateUserPwd(user, hash){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
             db(tableNames.Authentication)

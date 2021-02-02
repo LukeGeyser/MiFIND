@@ -10,7 +10,7 @@ var conn = mysql.createConnection({
     database: process.env.DB_NAME
 });
 
-function addDevice(schema){
+async function addDevice(schema){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
             db(tableNames.Devices).insert(schema).then((data) => {
@@ -22,7 +22,7 @@ function addDevice(schema){
     });
 }
 
-function getAllDevices(){
+async function getAllDevices(){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
             db.select('*')
@@ -36,7 +36,7 @@ function getAllDevices(){
     });
 }
 
-function getSingleDevice(imei){
+async function getSingleDevice(imei){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
             db.select('*')
@@ -53,7 +53,7 @@ function getSingleDevice(imei){
     });
 }
 
-function getDevicesSensors(groupId){
+async function getDevicesSensors(groupId){
     return new Promise(function (resolve, reject){
         setTimeout(function () {
             db.select('Sensors.*').from(tableNames.Sensors)
@@ -69,7 +69,7 @@ function getDevicesSensors(groupId){
     });
 }
 
-function getDevicesAttributes(sensorId){
+async function getDevicesAttributes(sensorId){
     return new Promise(function (resolve, reject){
         setTimeout(function () {
             db.select('Attributes.*').from(tableNames.Attributes)
@@ -85,10 +85,33 @@ function getDevicesAttributes(sensorId){
     });
 }
 
+function getAttributeValue(attributeId){
+    return new Promise(function (resolve, reject){
+        setTimeout(function () {
+            db.select('DeviceAttributeData.AttributeValue').from(tableNames.DeviceAttributeData)
+                .join(tableNames.SensorAttributes, 'DeviceAttributeData.SensorAtrributeId', 'SensorAttributes.Id')
+                .where('SensorAttributes.AttributeId', attributeId)
+                .orderBy('TimeStamp', 'desc')
+                .first()
+                .then((data) => {
+                    resolve(data);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        }, 0);
+    });
+}
+
 // SELECT * 
 // FROM Attributes 
 // INNER JOIN SensorAttributes ON Attributes.Id = SensorAttributes.AttributeId 
 // WHERE SensorAttributes.SensorId = 1
+
+// SELECT * 
+// FROM DeviceAttributeData 
+// INNER JOIN SensorAttributes ON DeviceAttributeData.SensorAtrributeId = SensorAttributes.Id 
+// WHERE SensorAttributes.AttributeId = 1
 
 module.exports = {
     addDevice,
@@ -96,4 +119,5 @@ module.exports = {
     getSingleDevice,
     getDevicesSensors,
     getDevicesAttributes,
+    getAttributeValue,
 };

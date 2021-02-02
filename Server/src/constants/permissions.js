@@ -19,4 +19,5 @@ module.exports = {
     AddBU: 'Add Bussiness Unit',
     GetAllBU: 'Get All Bussiness Unit',
     GetBU: 'Get Bussiness Unit',
+    GetSingleDevice: 'Get Single Device'
 };

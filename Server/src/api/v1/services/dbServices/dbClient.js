@@ -14,7 +14,8 @@ var conn = mysql.createConnection({
 async function createUser(schema){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
-            db(tableNames.Authentication).insert(schema)
+            db(tableNames.Authentication)
+                .insert(schema)
                 .then(function (data) {
                     resolve(data);
                 })
@@ -28,9 +29,12 @@ async function createUser(schema){
 async function getUser(UserName){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
-            db.select('*').from(tableNames.Authentication).where('Username', UserName)
+            db.select('*')
+                .from(tableNames.Authentication)
+                .where('Username', UserName)
+                .first()
                 .then(function (data) {
-                    resolve(data[0]);
+                    resolve(data);
                 }).catch((err) => {
                     reject(err);
                 });
@@ -41,9 +45,12 @@ async function getUser(UserName){
 async function getUserById(userId){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
-            db.select('*').from(tableNames.Authentication).where('UserId', userId)
+            db.select('*')
+                .from(tableNames.Authentication)
+                .where('UserId', userId)
+                .first()
                 .then(function (data) {
-                    resolve(data[0]);
+                    resolve(data);
                 }).catch((err) => {
                     reject(err);
                 });
@@ -54,11 +61,15 @@ async function getUserById(userId){
 async function updateUserTokenVersion(user){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
-            db(tableNames.Authentication).where({ UserId: user.UserId.toString()}).update({TokenVersion: user.TokenVersion}).then((data) => {
-                resolve(data);
-            }).catch((err) => {
-                reject(err);
-            });
+            db(tableNames.Authentication)
+                .where({ UserId: user.UserId.toString()})
+                .update({TokenVersion: user.TokenVersion})
+                .then((data) => {
+                    resolve(data);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
         }, 0);
     });
 }
@@ -66,11 +77,14 @@ async function updateUserTokenVersion(user){
 function updateUserPwd(user, hash){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
-            db(tableNames.Authentication).where({ UserId: user.UserId}).update({Password: hash}).then((data) => {
-                resolve(data);
-            }).catch((err) => {
-                reject(err);
-            });
+            db(tableNames.Authentication)
+                .where({ UserId: user.UserId})
+                .update({Password: hash})
+                .then((data) => {
+                    resolve(data);
+                }).catch((err) => {
+                    reject(err);
+                });
         }, 0);
     });
 }

@@ -42,7 +42,9 @@ async function addPermission(permission){
 async function getPermissionForUser(userId){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
-            db.select('Description').from(tableNames.PermissionIndex).join(tableNames.Permissions, 'PermissionIndex.Id', 'Permissions.PermissionIndexId')
+            db.select('Description')
+                .from(tableNames.PermissionIndex)
+                .join(tableNames.Permissions, 'PermissionIndex.Id', 'Permissions.PermissionIndexId')
                 .where('Permissions.UserId', userId)
                 .then(function (data) {
                     resolve(data);

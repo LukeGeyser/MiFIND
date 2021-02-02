@@ -13,7 +13,8 @@ var conn = mysql.createConnection({
 async function getGroups(){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
-            db.select('*').from(tableNames.Groups)
+            db.select('*')
+                .from(tableNames.Groups)
                 .then(function (data) {
                     resolve(data);
                 });

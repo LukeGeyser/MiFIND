@@ -22,6 +22,69 @@ function addDevice(schema){
     });
 }
 
+function getAllDevices(){
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            db.select('*')
+                .from(tableNames.Devices)
+                .then((data) => {
+                    resolve(data);
+                }).catch((err) => {
+                    reject(err);
+                });
+        }, 0);
+    });
+}
+
+function getSingleDevice(imei){
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            db.select('*')
+                .from(tableNames.Devices)
+                .where({Imei: imei})
+                .first()
+                .then((data) => {
+                    resolve(data);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        }, 0);
+    });
+}
+
+function getDevicesSensors(groupId){
+    return new Promise(function (resolve, reject){
+        setTimeout(function () {
+            db.select('Sensors.*').from(tableNames.Sensors)
+                .join(tableNames.SensorGroups, 'SensorGroups.SensorId', 'Sensors.Id')
+                .where('SensorGroups.GroupId', groupId)
+                .then((data) => {
+                    resolve(data);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        }, 0);
+    });
+}
+
+function getDevicesAttributes(sensorId){
+    return new Promise(function (resolve, reject){
+        setTimeout(function () {
+            db.select('Attributes.*').from(tableNames.Attributes)
+                .join(tableNames.SensorAttributes, 'SensorAttributes.AttributeId', 'Attributes.Id')
+                .where('SensorAttributes.SensorId', sensorId)
+                .then((data) => {
+                    resolve(data);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        }, 0);
+    });
+}
+
 // SELECT * 
 // FROM Attributes 
 // INNER JOIN SensorAttributes ON Attributes.Id = SensorAttributes.AttributeId 
@@ -29,4 +92,8 @@ function addDevice(schema){
 
 module.exports = {
     addDevice,
+    getAllDevices,
+    getSingleDevice,
+    getDevicesSensors,
+    getDevicesAttributes,
 };

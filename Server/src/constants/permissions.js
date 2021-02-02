@@ -14,4 +14,9 @@ module.exports = {
     AddPermissionIndex: 'Add Permission Index',
     GetAllPermissionIndexes: 'Get All Permission Indexes',
     GetAllUserPermissionIndexes: 'Get All User Permission Indexes',
+    RevokeToken: 'Revoke Token',
+    AddDevice: 'Add Device',
+    AddBU: 'Add Bussiness Unit',
+    GetAllBU: 'Get All Bussiness Unit',
+    GetBU: 'Get Bussiness Unit',
 };

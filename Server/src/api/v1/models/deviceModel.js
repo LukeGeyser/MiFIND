@@ -1,9 +1,13 @@
 var Joi = require('joi');
 
 var schema = Joi.object({
-    DeviceID: Joi.number().required(),
-    SerialNumber: Joi.number().required(),
+    Imei: Joi.number().required(),
+    SerialNumber: Joi.string().required(),
     GroupID: Joi.number().required(),
+    Name: Joi.string().required(),
+    Description: Joi.string().required(),
+    BussinessUnitID: Joi.number().required(),
+    BusID: Joi.string().required(),
 });
 
 module.exports = {

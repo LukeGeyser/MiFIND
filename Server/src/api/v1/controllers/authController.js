@@ -3,19 +3,20 @@ const router = express.Router();
 const bodyParser = require('body-parser');
 const dbClient = require('../services/dbServices/dbClient');
 const authService = require('../services/authService');
-const clientService = require('../services/clientService');
+const authMiddleware = require('../middleware/authTokenMiddleware');
+const clientService = require('../services/pwdService');
 const permissions = require('../../../constants/permissions');
 const permissionsMiddleware = require('../middleware/permissionMiddleware');
-
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 Mins
-//   max: 100 // Limit each IP to 100 requests per windowMs
-// });
+const errors = require('../../../constants/errorMessages');
 
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
-router.post('/login', permissionsMiddleware.checkPermissionLogin(permissions.Login), async (req, res, next) => {
+var customError;
+
+router.post('/login', 
+  permissionsMiddleware.checkPermissionLogin(permissions.Login), 
+  async (req, res, next) => {
   // Getting the Username and Password from response body
   try {
     const { username } = req.body;
@@ -23,17 +24,21 @@ router.post('/login', permissionsMiddleware.checkPermissionLogin(permissions.Log
 
     const userObject = await dbClient.getUser(username);
 
-    // TODO: CHECK USERNAME AND PASSWORD
-
     if (!userObject) {
-        // Response with Invalide Creds
-        return res.status(403).send({ error: 'No such user found' }); // TODO: Make this error Response more fleshed out
+      res.status(403);
+      customError = new Error();
+      customError.CustomError = errors.NoUserFound;
+      next(customError);
     }
 
     var isValidPwd = await clientService.validatePassword(password, userObject.Password);
 
-    if (!isValidPwd)
-      res.status(401).send({ error: 'No such user found' }); // TODO: Make this error Response more fleshed out
+    if (!isValidPwd) {
+      res.status(403);
+      customError = new Error();
+      customError.CustomError = errors.UsrnPwd;
+      next(customError); 
+    }
     else {
       userObject.TokenVersion += 1;
       await dbClient.updateUserTokenVersion(userObject);
@@ -64,16 +69,17 @@ router.post('/login', permissionsMiddleware.checkPermissionLogin(permissions.Log
   }
 });
 
-router.post('/refresh_token', async (req, res, next) => {
+router.post('/refresh_token', 
+  permissionsMiddleware.checkPermission(permissions.RefreshToken), 
+  async (req, res, next) => {
   try {
     var refreshToken = req.cookies[process.env.REFRESH_TOKEN_ID];
 
     if (!refreshToken){
-      return res.status(401).send({ 
-          authentication: 'false', 
-          reason: 'No Refresh Token Found', 
-          access_token: '' 
-      }); // TODO: Make this error Response more fleshed out   
+      res.status(401);
+      customError = new Error();
+      customError.CustomError = errors.MissingRefresh;
+      next(customError);  
     }
     
     var refreshTokenPayload = null;
@@ -81,38 +87,33 @@ router.post('/refresh_token', async (req, res, next) => {
     try {
       refreshTokenPayload = await authService.checkRefreshAuthToken(refreshToken);
     } catch (err) {
-      console.log(err);
-      return res.status(500).send({ 
-          authentication: 'false', 
-          reason: 'Internal Server Error', 
-          access_token: '' 
-      });
+      res.status(500);
+      customError = new Error();
+      customError.CustomError = errors.InternalServerError;
+      next(customError);
     }
 
     if (!refreshTokenPayload){
-      return res.status(401).send({ 
-          authentication: 'false', 
-          reason: 'Invalid Refresh Token', 
-          access_token: '' 
-      });
+      res.status(401);
+      customError = new Error();
+      customError.CustomError = errors.InvalidRefresh;
+      next(customError);
     }
 
     var user = await dbClient.getUserById(refreshTokenPayload.userId);
 
     if (!user){
-      return res.status(404).send({ 
-          authentication: 'false', 
-          reason: 'Refresh token does not belong to a user', 
-          access_token: '' 
-      });
+      res.status(401);
+      customError = new Error();
+      customError.CustomError = errors.InvalidRefresh;
+      next(customError);
     }
 
     if (user.TokenVersion !== refreshTokenPayload.tokenVersion){
-      return res.status(401).send({ 
-          authentication: 'false', 
-          reason: 'Invalid Refresh Token', 
-          access_token: '' 
-      });
+      res.status(401);
+      customError = new Error();
+      customError.CustomError = errors.InvalidRefresh;
+      next(customError);
     }
     var token = await authService.generateAuthToken(user.UserId);
 
@@ -138,7 +139,10 @@ router.post('/refresh_token', async (req, res, next) => {
 });
 
 // TODO: NEED TO ADD SECURITY BEHIND THIS, ONLY AUTHORIZED USERS CAN ACCESS THIS ROUTE
-router.post('/invalidate_token', async (req, res, next) => {
+router.post('/invalidate_token', 
+  authMiddleware.AuthenticateToken, 
+  permissionsMiddleware.checkPermission(permissions.RevokeToken), 
+  async (req, res, next) => {
   try {
     // TODO: NEED TO AUTH USER TRYING TO GET INTO THIS ROUTE
 
@@ -147,8 +151,10 @@ router.post('/invalidate_token', async (req, res, next) => {
     const userObject = await dbClient.getUser(username);
 
     if (!userObject) {
-      // Response with Invalide Creds
-      return res.status(403).send({ error: 'No such user found' }); // TODO: Make this error Response more fleshed out
+      res.status(403);
+      customError = new Error();
+      customError.CustomError = errors.NoUserFound;
+      next(customError);
     }
 
     userObject.TokenVersion += 1;

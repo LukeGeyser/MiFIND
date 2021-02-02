@@ -1,7 +1,4 @@
-var jwt = require("jsonwebtoken");
 var bcrypt = require('bcryptjs');
-var crypto = require("crypto");
-var fs = require("fs");
 
 function validatePassword(pwd, hash){
     return new Promise(function (resolve) {

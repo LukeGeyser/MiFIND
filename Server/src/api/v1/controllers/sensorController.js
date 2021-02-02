@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const MiDevice = require('../models/mideviceModel');
 const dataservice = require('../services/dbServices/dbDevices');
-
+const authMiddleware = require('../middleware/authTokenMiddleware');
 
 router.post('/midevice', async function (req, res) {
 

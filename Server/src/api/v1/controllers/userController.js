@@ -1,79 +1,86 @@
-var crypto = require('crypto');
-var bcrypt = require('bcryptjs');
-
 var express = require('express');
 var router = express.Router();
 var bodyParser = require('body-parser');
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
+// LOCAL IMPORTS
 var dataService = require('../services/dbServices/dbClient');
+var clientService = require('../services/pwdService');
 var authService = require('../services/authService');
-var clientService = require('../services/clientService');
+const permissions = require('../../../constants/permissions');
+const permissionsMiddleware = require('../middleware/permissionMiddleware');
+const modelValidator = require('../middleware/modelMiddleware');
+const modelsClient = require('../models/clientModel');
+const errors = require('../../../constants/errorMessages');
+const authMiddleware = require('../middleware/authTokenMiddleware');
 
-router.post('/create', async function (req, res) {
+var customError;
 
-    var username = req.body.username;
-    var password = req.body.password;
+router.post('/create', 
+    modelValidator.validateBodySchema(modelsClient.insertSchema), 
+    async function (req, res, next) {
 
-    var hash = await clientService.getPasswordHash(password);
+    try {
+        var hash = await clientService.getPasswordHash(req.body.Password);
 
-    dataService.createUser(username, hash, function(err, result) {
-        if (err) {
-            res.status(500).send({ message: "User Was Not created Successfully", error: err.message });
-            return;
-        } 
+        req.body.Password = hash;
+        await dataService.createUser(req.body);
 
-        return res.status(201).send({ message: "User was created successfully", creationData: new Date().toUTCString() });
-    });
+        res.status(200).send();
+    } catch (error) {
+        next(error);
+    }
 });
 
-router.post('/changePassword', authService.AuthenticateToken, async function (req, res) {
+router.post('/changePassword',
+    authMiddleware.AuthenticateToken,
+    permissionsMiddleware.checkPermission(permissions.ChangePassword),
+    modelValidator.validateBodySchema(modelsClient.updatePwdSchema),
+    async function (req, res, next) {
 
-    // Checking for Valid Token
     var isValidToken = req.TokenData;
-
-    // Checking for Valid Credentials
     try {
-        var username = req.body.username;
-        var oldpassword = req.body.password;
-        var newpassword = req.body.newpassword;
 
-        var userObject = await dataService.getUser(username);
+        var userObject = await dataService.getUser(req.body.UserName);
 
         if (!userObject) {
-            // Response with Invalide Creds
-            return res.status(403).send({ error: 'No such user found' }); // TODO: Make this error Response more fleshed out
+            res.status(403);
+            customError = new Error();
+            customError.CustomError = errors.NoUserFound;
+            next(customError);
         }
 
         if (userObject.UserId !== isValidToken.userId){
-            return res.status(401).send(
-                { 
-                    authentication: 'false', 
-                    reason: 'Token does not belong to a user',
-                    access_token: '' 
-                });
+            res.status(401);
+            customError = new Error();
+            customError.CustomError = errors.InvalidToken;
+            next(customError);
         }
 
-        var pwdResponse = await clientService.validatePassword(oldpassword, userObject.Password);
+        var pwdResponse = await clientService.validatePassword(req.body.OldPassword, userObject.Password);
 
         if (!pwdResponse){
-            res.status(403).send({ error: "Username and Password is incorrect" }); // TODO: Make this error Response more fleshed out
-            return;
+            res.status(403);
+            customError = new Error();
+            customError.CustomError = errors.UsrnPwd;
+            next(customError);
         } else {
-            var hash = await clientService.getPasswordHash(newpassword);
+            var hash = await clientService.getPasswordHash(req.body.NewPassword);
 
-            var response = await dataService.updateUserPwd(userObject.UserId, hash);
+            var response = await dataService.updateUserPwd(userObject, hash);
 
             if (!response){
-                res.status(500).send({ error: "Something went wrong" }); // TODO: Make this error Response more fleshed out
+                res.status(500);
+                customError = new Error();
+                customError.CustomError = errors.InternalServerError;
+                next(customError);
             } else {
-                res.status(200).send(); // TODO: Make this error Response more fleshed out
+                res.status(200).send();
             }
         }
-        
     } catch (error) {
-        res.status(500).send({error: error});
+        next(error);
     }
 
 });

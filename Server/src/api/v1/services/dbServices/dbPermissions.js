@@ -22,9 +22,6 @@ async function addPermissionIndex(permissionIndex){
                     reject(error);
                 });
         }, 0);
-    })
-    .catch((error) => {
-        next(error);
     });
 }
 
@@ -39,9 +36,6 @@ async function addPermission(permission){
                     reject(error);
                 });
         }, 0);
-    })
-    .catch((error) => {
-        next(error);
     });
 }
 
@@ -51,15 +45,12 @@ async function getPermissionForUser(userId){
             db.select('Description').from(tableNames.PermissionIndex).join(tableNames.Permissions, 'PermissionIndex.Id', 'Permissions.PermissionIndexId')
                 .where('Permissions.UserId', userId)
                 .then(function (data) {
-                    resolve(data[0]);
+                    resolve(data);
                 })
                 .catch((error) => {
                     reject(error);
                 });
         }, 0);
-    })
-    .catch((error) => {
-        next(error);
     });
 }
 

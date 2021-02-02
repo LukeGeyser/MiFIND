@@ -92,7 +92,7 @@ function generateAuthToken(userId){
     const certPriv = fs.readFileSync('rsa-private-key.pem');
 
     const token = jwt.sign({ userId: userId }, certPriv, {
-        expiresIn: '15m', // expires in 15 minutes
+        expiresIn: '1d', // expires in 15 minutes 15m
         algorithm: 'RS256',
     });
 
@@ -118,27 +118,6 @@ function setRefreshToken(token, res){
     });
 }
 
-async function AuthenticateToken(req, res, next){
-    try {
-        const header = req.headers.authorization;
-        const token = header && header.split(' ')[1];
-
-        if (token == null) 
-            return res.status(401).send({ error: "Invalid Authorization" });
-
-        const isValidToken = await checkAuthToken(token);
-
-        if (!isValidToken)
-            return res.status(401).send({ error: "Token is not valid" }); // TODO: Make this error Response more fleshed out
-        
-        req.TokenData = isValidToken;
-        next();
-
-    } catch (error) {
-        return res.status(500).send({error: error});
-    }
-}
-
 module.exports = {
     generatePublicPrivateKeysForToken: generatePublicPrivateKeysForToken,
     generatePublicPrivateKeysForRefreshToken: generatePublicPrivateKeysForRefreshToken,
@@ -147,6 +126,5 @@ module.exports = {
     checkAuthToken: checkAuthToken,
     checkRefreshAuthToken: checkRefreshAuthToken,
     setRefreshToken: setRefreshToken,
-    AuthenticateToken: AuthenticateToken
 };
 

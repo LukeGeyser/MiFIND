@@ -10,11 +10,11 @@ var conn = mysql.createConnection({
     database: process.env.DB_NAME
 });
 
-function addMiDEVICEData(schema){
+function addDevice(schema){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
-            db(tableNames.Data).insert(schema).then(() => {
-                resolve();
+            db(tableNames.Devices).insert(schema).then((data) => {
+                resolve(data);
             }).catch((err) => {
                 reject(err);
             });
@@ -28,5 +28,5 @@ function addMiDEVICEData(schema){
 // WHERE SensorAttributes.SensorId = 1
 
 module.exports = {
-    addMiDEVICEData,
+    addDevice,
 };

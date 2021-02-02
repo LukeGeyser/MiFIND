@@ -16,5 +16,6 @@ module.exports = {
     SensorProtocols: 'SensorProtocols',
     Sensors: 'Sensors',
     DeviceAttributeData: 'DeviceAttributeData',
-    Attributes: 'Attributes'
+    Attributes: 'Attributes',
+    BussinessUnits: 'BussinessUnits',
 };

@@ -9,7 +9,9 @@ const dbDevice = require('../services/dbServices/dbDevices');
 const permissions = require('../../../constants/permissions');
 const permissionsMiddleware = require('../middleware/permissionMiddleware');
 const authMiddleware = require('../middleware/authTokenMiddleware');
-const { timeout } = require('async');
+const errors = require('../../../constants/errorMessages');
+
+var customError;
 
 router.get('/', 
     authMiddleware.AuthenticateToken, 
@@ -19,7 +21,7 @@ router.get('/',
 
             var devices = await dbDevice.getAllDevices();
 
-            res.status(200).json(devices);
+            return res.status(200).json(devices);
 
         } catch (error) {
             next(error);
@@ -34,6 +36,13 @@ router.get('/:imei',
 
             var device = await dbDevice.getSingleDevice(req.params.imei);
 
+            if (device == null){
+                res.status(403);
+                customError = new Error();
+                customError.CustomError = errors.NoDeviceFound;
+                return next(customError);
+            }
+
             var { GroupID } = device;
 
             var sensors = await dbDevice.getDevicesSensors(GroupID);
@@ -44,12 +53,13 @@ router.get('/:imei',
                 sensor.Attributes = attributes;
             }));
 
-            sensors.forEach(async sensor => {
+            await Promise.all(sensors.map(async sensor => {
                 await Promise.all(sensor.Attributes.map(async attribute => {
-                    var data = await dbDevice.getAttributeValue(attribute.Id);
-                    console.log(data);
+                    var data = await dbDevice.getAttributeValue(attribute.Id).then((data) => {
+                        attribute.Value = data.AttributeValue;
+                    });
                 }));
-            });
+            }));
 
             return res.status(200).json({
                 Device: device,
@@ -70,7 +80,7 @@ router.post('/insert',
 
             await dbDevice.addDevice(req.body);
 
-            res.status(200).send();
+            return res.status(200).send();
 
         } catch (error) {
             next(error);

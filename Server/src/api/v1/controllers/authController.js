@@ -22,6 +22,8 @@ router.post('/login',
     const { username } = req.body;
     const { password } = req.body;
 
+    console.log(req.body);
+
     const userObject = await dbClient.getUser(username);
 
     if (!userObject) {

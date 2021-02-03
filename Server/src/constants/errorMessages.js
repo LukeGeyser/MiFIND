@@ -31,4 +31,8 @@ module.exports = {
         Code: 'Unauthorized',
         Reason: 'Specified Refresh Token is not Valid'
     },
+    NoDeviceFound: {
+        Code: 'Not Found',
+        Reason: 'Specified Device was not found'
+    },
 };

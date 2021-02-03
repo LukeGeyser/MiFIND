@@ -7,6 +7,9 @@ const router = express.Router();
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const helmet = require('helmet');
+const rfs = require('rotating-file-stream');
+var path = require('path');
+
 
 // LOCAL IMPORTS
 const authController = require('./controllers/authController');
@@ -17,6 +20,7 @@ const permissionController = require('./controllers/permissionController');
 const deviceController = require('./controllers/deviceController');
 const bUController = require('./controllers/bUController');
 const errorHandler = require('./middleware/errorMiddleware');
+const generator = require('../../lib/accessLogGenerator');
 
 const speedLimiter = slowDown({
     windowMs: 30 * 1000, // 15 minutes 15 * 60 * 1000
@@ -29,7 +33,18 @@ const limiter = rateLimit({
     max: 20 // Limit each IP to 100 requests per windowMs
 });
 
-router.use(morgan('combined'));
+// // create a rotating write stream
+// var accessLogStream = rfs.createStream(__dirname + 'logs/access.log', {
+//     interval: '1d', // rotate daily
+// });
+
+const stream = rfs.createStream(generator.generator, {
+    interval: '1d', // rotate daily
+    teeToStdout: true,
+    path: __dirname + '../../../../logs/'
+  });
+
+router.use(morgan('combined', { stream: stream}));
 router.use(helmet());
 
 router.use(cookieParser());

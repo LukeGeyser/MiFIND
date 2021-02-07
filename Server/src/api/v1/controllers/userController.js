@@ -1,19 +1,39 @@
-var express = require('express');
-var router = express.Router();
-var bodyParser = require('body-parser');
+const express = require('express');
+const router = express.Router();
+const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
+const handlebars = require('handlebars');
+const fs = require('fs');
+const path = require('path');
+
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
+let transporter = nodemailer.createTransport({
+    host: process.env.MAILER_SMTP_OUTGOING_SERVER,
+    port: 587,
+    auth: {
+      user: process.env.MAILER_USERNAME, 
+      pass: process.env.MAILER_PASSWORD, 
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
+});
+
 // LOCAL IMPORTS
-var dataService = require('../services/dbServices/dbClient');
-var clientService = require('../services/pwdService');
-var authService = require('../services/authService');
+const dataService = require('../services/dbServices/dbClient');
+const clientService = require('../services/pwdService');
 const permissions = require('../../../constants/permissions');
 const permissionsMiddleware = require('../middleware/permissionMiddleware');
 const modelValidator = require('../middleware/modelMiddleware');
 const modelsClient = require('../models/clientModel');
 const errors = require('../../../constants/errorMessages');
 const authMiddleware = require('../middleware/authTokenMiddleware');
+
+const source = fs.readFileSync(path.join(__dirname + '..\\..\\..\\..\\templates\\passwordResetTemplate.hbs'), 'utf8');
+
+const resetPWDTemplate = handlebars.compile(source);
 
 var customError;
 
@@ -33,10 +53,10 @@ router.post('/create',
     }
 });
 
-router.post('/changePassword',
+router.post('/resetPassword',
     authMiddleware.AuthenticateToken,
     permissionsMiddleware.checkPermission(permissions.ChangePassword),
-    modelValidator.validateBodySchema(modelsClient.updatePwdSchema),
+    modelValidator.validateBodySchema(modelsClient.resetPwdSchema),
     async function (req, res, next) {
 
     var isValidToken = req.TokenData;
@@ -84,6 +104,32 @@ router.post('/changePassword',
     }
 
 });
+
+router.post('/requestResetPassword', 
+    authMiddleware.AuthenticateToken,
+    permissionsMiddleware.checkPermission(permissions.ChangePassword),
+    modelValidator.validateBodySchema(modelsClient.requestResetPwdSchema),
+    async function (req, res, next) {
+        try {
+            var passwordResetAddress = 'www.google.com';
+            let info = await transporter.sendMail(options('luke@miconsult.co.za', {passwordResetAddress}));
+
+            res.status(200).send({MessageId: info.messageId});
+            // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+
+        } catch (error) {
+           next(error);
+        }
+});
+
+var options = (email, locals) => {
+    return {
+        from: `"MiTRACE" <${process.env.MAILER_USERNAME}>`,
+        to: email,
+        subject: 'MiTRACE | Password Reset',
+        html: resetPWDTemplate(locals) // Process template with locals - {passwordResetAddress}
+      };
+};
 
 
 module.exports = router;

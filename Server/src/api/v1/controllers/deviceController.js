@@ -110,7 +110,6 @@ router.post('/data/insert',
             }
 
             for (const key in groupSensors) {
-                // console.log(groupSensors[key].SensorId);
 
                 for (let index = 0; index < attributes.length; index++) {
                     const element = attributes[index];

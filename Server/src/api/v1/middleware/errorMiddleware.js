@@ -18,6 +18,8 @@ const errorHandler = function (error, req, res, next) {
         case 'ENOTFOUND':
             error.message = 'Connection Issues, please check your connectivity';
             break;
+        case 'ESOCKET':
+            break;
         default:
             break;
     }

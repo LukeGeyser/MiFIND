@@ -33,11 +33,6 @@ const limiter = rateLimit({
     max: 20 // Limit each IP to 100 requests per windowMs
 });
 
-// // create a rotating write stream
-// var accessLogStream = rfs.createStream(__dirname + 'logs/access.log', {
-//     interval: '1d', // rotate daily
-// });
-
 const stream = rfs.createStream(generator.generator, {
     interval: '1d', // rotate daily
     teeToStdout: true,

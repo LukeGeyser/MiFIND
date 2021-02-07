@@ -85,10 +85,11 @@ async function getDevicesAttributes(sensorId){
     });
 }
 
-function getAttributeValue(attributeId){
+async function getAttributeValue(attributeId){
     return new Promise(function (resolve, reject){
         setTimeout(function () {
-            db.select('DeviceAttributeData.AttributeValue').from(tableNames.DeviceAttributeData)
+            db.select('DeviceAttributeData.AttributeValue')
+                .from(tableNames.DeviceAttributeData)
                 .join(tableNames.SensorAttributes, 'DeviceAttributeData.SensorAtrributeId', 'SensorAttributes.Id')
                 .where('SensorAttributes.AttributeId', attributeId)
                 .orderBy('TimeStamp', 'desc')
@@ -98,6 +99,72 @@ function getAttributeValue(attributeId){
                 })
                 .catch((err) => {
                     reject(err);
+                });
+        }, 0);
+    });
+}
+
+async function getAttribute(attributename){
+    return new Promise(function (resolve, reject) {
+        setTimeout(function (){
+            db.select('*')
+                .from(tableNames.Attributes)
+                .where('Name', attributename)
+                .first()
+                .then((data) => {
+                    resolve(data);
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+        }, 0);
+    });
+}
+
+async function getGroupSensor(groupId){
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            db.select('SensorId')
+                .from(tableNames.SensorGroups)
+                .where('GroupId', groupId)
+                .then((data) => {
+                    resolve(data);
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+        }, 0);
+    });
+}
+
+async function getAttributeSensorId(attributeId, SensorId){
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            db.select('Id')
+                .from(tableNames.SensorAttributes)
+                .where('SensorId', SensorId)
+                .where('AttributeId', attributeId)
+                .first()
+                .then((data) => {
+                    resolve(data);
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+        }, 0);
+    });
+}
+
+async function addNewAttributeValue(sensorAttributeId, attributeValue){
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            db(tableNames.DeviceAttributeData)
+                .insert({'SensorAtrributeId': sensorAttributeId, AttributeValue: attributeValue})
+                .then((data) => {
+                    resolve(data);
+                })
+                .catch((error) => {
+                    reject(error);
                 });
         }, 0);
     });
@@ -120,4 +187,8 @@ module.exports = {
     getDevicesSensors,
     getDevicesAttributes,
     getAttributeValue,
+    getAttribute,
+    getGroupSensor,
+    getAttributeSensorId,
+    addNewAttributeValue,
 };

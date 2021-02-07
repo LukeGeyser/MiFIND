@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const _ = require('underscore');
 
 // LOCAL IMPORTS
 const authService = require('../services/authService');
@@ -82,6 +83,49 @@ router.post('/insert',
 
             return res.status(200).send();
 
+        } catch (error) {
+            next(error);
+        }
+});
+
+router.post('/data/insert', 
+    authMiddleware.AuthenticateToken, 
+    permissionsMiddleware.checkPermission(permissions.AddDevice), 
+    // modelValidator.validateBodySchema(modelsDevice.schema),
+    async (req, res, next) => {
+        try {
+            var attributes = [];
+
+            const device = await dbDevice.getSingleDevice(req.body.Imei);
+
+            var groupSensors = await dbDevice.getGroupSensor(device.GroupID);
+
+            for(var attributename in req.body){
+                if (attributename != 'Imei'){
+                    var att = await dbDevice.getAttribute(attributename);
+                    att.Data = req.body[attributename];
+
+                    attributes.push(att);
+                }
+            }
+
+            for (const key in groupSensors) {
+                // console.log(groupSensors[key].SensorId);
+
+                for (let index = 0; index < attributes.length; index++) {
+                    const element = attributes[index];
+
+                    var Index = await dbDevice.getAttributeSensorId(element.Id, groupSensors[key].SensorId);
+
+                    // ADD TO DB THE NEW VALUES
+                    if (Index != undefined){
+                        var temp = await dbDevice.addNewAttributeValue(Index.Id, element.Data);
+                        console.log(element.Data);
+                        console.log(Index);
+                    }
+                }
+            }
+            return res.status(200).send(attributes);
         } catch (error) {
             next(error);
         }

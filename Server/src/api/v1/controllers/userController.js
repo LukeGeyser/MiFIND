@@ -30,6 +30,8 @@ const modelValidator = require('../middleware/modelMiddleware');
 const modelsClient = require('../models/clientModel');
 const errors = require('../../../constants/errorMessages');
 const authMiddleware = require('../middleware/authTokenMiddleware');
+const defaultPerms = require('../../../constants/permissionsIndex');
+const authService = require('../services/authService');
 
 const source = fs.readFileSync(path.join(__dirname + '..\\..\\..\\..\\templates\\passwordResetTemplate.hbs'), 'utf8');
 
@@ -45,7 +47,11 @@ router.post('/create',
         var hash = await clientService.getPasswordHash(req.body.Password);
 
         req.body.Password = hash;
-        await dataService.createUser(req.body);
+
+        var response = await dataService.createUser(req.body);
+
+        // CREATE THE DEFAULT PERMS FOR A USER
+        await authService.applyUserPermission(defaultPerms.userBasicPermissions, response);
 
         res.status(200).send();
     } catch (error) {

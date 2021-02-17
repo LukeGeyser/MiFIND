@@ -4,6 +4,10 @@ var fs = require('fs');
 require('dotenv').config();
 const cookies = require('cookie-parser');
 
+// LOCAL IMPORTS
+const dbPermissions = require('../services/dbServices/dbPermissions');
+const { reject } = require('underscore');
+
 function generatePublicPrivateKeysForToken(){
 
     // TODO: Look into using this somehow, using Pub and Priv keys
@@ -118,6 +122,21 @@ function setRefreshToken(token, res){
     });
 }
 
+async function applyUserPermission(permissions, userId){
+
+    // Iterate through each permission, and get the ID.
+
+    await Promise.all(permissions.map(async element => {
+        var permID = await dbPermissions.getPermissionIndex(element);
+        await dbPermissions.addPermission(
+            {
+                PermissionIndexId: permID.Id,
+                UserId: userId
+            });
+    }));
+
+}
+
 module.exports = {
     generatePublicPrivateKeysForToken: generatePublicPrivateKeysForToken,
     generatePublicPrivateKeysForRefreshToken: generatePublicPrivateKeysForRefreshToken,
@@ -126,5 +145,6 @@ module.exports = {
     checkAuthToken: checkAuthToken,
     checkRefreshAuthToken: checkRefreshAuthToken,
     setRefreshToken: setRefreshToken,
+    applyUserPermission: applyUserPermission,
 };
 

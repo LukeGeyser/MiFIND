@@ -4,7 +4,7 @@ const perms = require('./permissions');
 const userBasicPermissions = [
     perms.Login,
     perms.ChangePassword,
-    perms.GetGroups,,
+    perms.GetGroups,
     perms.GetAllSensors,
     perms.GetAllDevicesForUser,
     perms.GetSingleDevice,

@@ -9,19 +9,8 @@ const path = require('path');
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
-let transporter = nodemailer.createTransport({
-    host: process.env.MAILER_SMTP_OUTGOING_SERVER,
-    port: 587,
-    auth: {
-      user: process.env.MAILER_USERNAME, 
-      pass: process.env.MAILER_PASSWORD, 
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-});
-
 // LOCAL IMPORTS
+const { transporter } = require('../../../constants/mailTransporter');
 const dataService = require('../services/dbServices/dbClient');
 const clientService = require('../services/pwdService');
 const permissions = require('../../../constants/permissions');

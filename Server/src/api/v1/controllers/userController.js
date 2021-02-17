@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const bodyParser = require('body-parser');
-const nodemailer = require('nodemailer');
 const handlebars = require('handlebars');
 const fs = require('fs');
 const path = require('path');
@@ -10,7 +9,7 @@ router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
 // LOCAL IMPORTS
-const { transporter } = require('../../../constants/mailTransporter');
+const { transporter } = require('../../../constants/mailTransporter'); 
 const dataService = require('../services/dbServices/dbClient');
 const clientService = require('../services/pwdService');
 const permissions = require('../../../constants/permissions');
@@ -110,7 +109,6 @@ router.post('/requestResetPassword',
             let info = await transporter.sendMail(options('luke@miconsult.co.za', {passwordResetAddress}));
 
             res.status(200).send({MessageId: info.messageId});
-            // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
         } catch (error) {
            next(error);

@@ -4,13 +4,6 @@ var db = require('../../../../db');
 var tableNames = require('../../../../constants/tableNames');
 const { reject } = require('async');
 
-var conn = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-});
-
 async function createUser(schema){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {

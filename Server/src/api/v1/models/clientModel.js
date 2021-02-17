@@ -15,14 +15,12 @@ var insertSchema = Joi.object({
 });
 
 var resetPwdSchema = Joi.object({
-    Username: Joi.string().required(),
     OldPassword: Joi.string().required(),
     NewPassword: Joi.string().required(),
 });
 
 var requestResetPwdSchema = Joi.object({
     Email: Joi.string().email().required(),
-    Username: Joi.string().required(),
 });
 
 module.exports = {

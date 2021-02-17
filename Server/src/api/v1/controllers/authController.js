@@ -18,61 +18,70 @@ router.post('/login',
   permissionsMiddleware.checkPermissionLogin(permissions.Login), 
   async (req, res, next) => {
   // Getting the Username and Password from response body
-  try {
-    const { username } = req.body;
-    const { password } = req.body;
+    try {
+      const { username } = req.body;
+      const { password } = req.body;
 
-    console.log(req.body);
+      console.log(username);
+      console.log(password);
 
-    const userObject = await dbClient.getUser(username);
+      if (username == "" || password == ""){
+        res.status(403);
+        customError = new Error();
+        customError.CustomError = errors.UsrnPwd;
+        return next(customError);
+      }
 
-    if (!userObject) {
-      res.status(403);
-      customError = new Error();
-      customError.CustomError = errors.NoUserFound;
-      next(customError);
+      const userObject = await dbClient.getUser(username);
+
+      if (!userObject) {
+        res.status(403);
+        customError = new Error();
+        customError.CustomError = errors.NoUserFound;
+        return next(customError);
+      }
+
+      var isValidPwd = await clientService.validatePassword(password, userObject.Password);
+
+      if (!isValidPwd) {
+        res.status(403);
+        customError = new Error();
+        customError.CustomError = errors.UsrnPwd;
+        return next(customError); 
+      }
+      else {
+        userObject.TokenVersion += 1;
+        await dbClient.updateUserTokenVersion(userObject);
+
+        var refreshToken = await authService.generateRefreshAuthToken(userObject.UserId, userObject.TokenVersion);
+        var token = await authService.generateAuthToken(userObject.UserId);
+
+        await authService.setRefreshToken(refreshToken, res);
+
+        var tokenCreationDate = new Date();
+
+        var tokenExpireDate = new Date(tokenCreationDate.getTime() + 60 * 60000);
+
+        var expiresIn = Math.abs(tokenExpireDate - tokenCreationDate) / 1000;
+
+        return res.status(200).send({
+            auth_status: 'Authorized',
+            access_token: token,
+            token_type: 'Bearer',
+            expires_in: expiresIn,
+            userName: username,
+            '.issued': tokenCreationDate.toUTCString(),
+            '.expires': tokenExpireDate.toUTCString(),
+        });
+      }
+    } catch (error) {
+      return next(error);
     }
-
-    var isValidPwd = await clientService.validatePassword(password, userObject.Password);
-
-    if (!isValidPwd) {
-      res.status(403);
-      customError = new Error();
-      customError.CustomError = errors.UsrnPwd;
-      next(customError); 
-    }
-    else {
-      userObject.TokenVersion += 1;
-      await dbClient.updateUserTokenVersion(userObject);
-
-      var refreshToken = await authService.generateRefreshAuthToken(userObject.UserId, userObject.TokenVersion);
-      var token = await authService.generateAuthToken(userObject.UserId);
-
-      await authService.setRefreshToken(refreshToken, res);
-
-      var tokenCreationDate = new Date();
-
-      var tokenExpireDate = new Date(tokenCreationDate.getTime() + 60 * 60000);
-
-      var expiresIn = Math.abs(tokenExpireDate - tokenCreationDate) / 1000;
-
-      res.status(200).send({
-          auth_status: 'Authorized',
-          access_token: token,
-          token_type: 'Bearer',
-          expires_in: expiresIn,
-          userName: username,
-          '.issued': tokenCreationDate.toUTCString(),
-          '.expires': tokenExpireDate.toUTCString(),
-      });
-    }
-  } catch (error) {
-    next(error);
-  }
 });
 
 router.post('/refresh_token', 
-  permissionsMiddleware.checkPermission(permissions.RefreshToken), 
+  authMiddleware.AuthenticateToken,
+  permissionsMiddleware.checkPermission(permissions.RefreshToken),
   async (req, res, next) => {
   try {
     var refreshToken = req.cookies[process.env.REFRESH_TOKEN_ID];
@@ -81,7 +90,7 @@ router.post('/refresh_token',
       res.status(401);
       customError = new Error();
       customError.CustomError = errors.MissingRefresh;
-      next(customError);  
+      return next(customError);  
     }
     
     var refreshTokenPayload = null;
@@ -92,14 +101,14 @@ router.post('/refresh_token',
       res.status(500);
       customError = new Error();
       customError.CustomError = errors.InternalServerError;
-      next(customError);
+      return next(customError);
     }
 
     if (!refreshTokenPayload){
       res.status(401);
       customError = new Error();
       customError.CustomError = errors.InvalidRefresh;
-      next(customError);
+      return next(customError);
     }
 
     var user = await dbClient.getUserById(refreshTokenPayload.userId);
@@ -108,14 +117,14 @@ router.post('/refresh_token',
       res.status(401);
       customError = new Error();
       customError.CustomError = errors.InvalidRefresh;
-      next(customError);
+      return next(customError);
     }
 
     if (user.TokenVersion !== refreshTokenPayload.tokenVersion){
       res.status(401);
       customError = new Error();
       customError.CustomError = errors.InvalidRefresh;
-      next(customError);
+      return next(customError);
     }
     var token = await authService.generateAuthToken(user.UserId);
 
@@ -125,7 +134,7 @@ router.post('/refresh_token',
 
     var expiresIn = Math.abs(tokenExpireDate - tokenCreationDate) / 1000;
 
-    res.status(200).send({
+    return res.status(200).send({
         authentication: 'true', 
         reason: '', 
         token_type: 'Bearer',
@@ -136,7 +145,7 @@ router.post('/refresh_token',
         '.expires': tokenExpireDate.toUTCString(),
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
@@ -156,7 +165,7 @@ router.post('/invalidate_token',
       res.status(403);
       customError = new Error();
       customError.CustomError = errors.NoUserFound;
-      next(customError);
+      return next(customError);
     }
 
     userObject.TokenVersion += 1;
@@ -164,7 +173,7 @@ router.post('/invalidate_token',
 
     return res.status(200).send();
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 

@@ -35,7 +35,11 @@ router.post('/create',
         var hash = await clientService.getPasswordHash(req.body.Password);
 
         req.body.Password = hash;
-        await dataService.createUser(req.body);
+
+        var response = await dataService.createUser(req.body);
+
+        // CREATE THE DEFAULT PERMS FOR A USER
+        await authService.applyUserPermission(defaultPerms.userBasicPermissions, response);
 
         return res.status(200).send();
     } catch (error) {

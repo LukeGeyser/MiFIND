@@ -56,8 +56,26 @@ async function getPermissionForUser(userId){
     });
 }
 
+async function getPermissionIndex(permDescription){
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            db.select('Id')
+                .from(tableNames.PermissionIndex)
+                .where(tableNames.PermissionIndex + '.Description', permDescription)
+                .first()
+                .then(function (data) {
+                    resolve(data);
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+        }, 0);
+    });
+}
+
 module.exports = {
     addPermissionIndex,
     addPermission,
-    getPermissionForUser
+    getPermissionForUser,
+    getPermissionIndex,
 };

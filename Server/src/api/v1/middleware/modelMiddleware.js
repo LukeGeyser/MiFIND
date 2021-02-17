@@ -4,9 +4,9 @@ function validateBodySchema(schema) {
         try {
             const value = await schema.validateAsync(req.body);
             res.ValidBody = value;
-            next();
+            return next();
         } catch (error) {
-            next(error);
+            return next(error);
         }
     };
 }

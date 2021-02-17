@@ -9,8 +9,6 @@ const dbPermissions = require('../services/dbServices/dbPermissions');
 const { reject } = require('underscore');
 
 function generatePublicPrivateKeysForToken(){
-
-    // TODO: Look into using this somehow, using Pub and Priv keys
     try {
         const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
             modulusLength: 2048,
@@ -23,8 +21,6 @@ function generatePublicPrivateKeysForToken(){
             format: 'pem'
             }
         });
-
-        // var processedPubKey = publicKey.slice(27, publicKey.length - 24 - 2);
 
         fs.writeFileSync('rsa-public-key.pem', publicKey);
         fs.writeFileSync('rsa-private-key.pem', privateKey);
@@ -35,8 +31,6 @@ function generatePublicPrivateKeysForToken(){
 }
 
 function generatePublicPrivateKeysForRefreshToken(){
-
-    // TODO: Look into using this somehow, using Pub and Priv keys
     try {
         const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
             modulusLength: 2048,
@@ -50,10 +44,30 @@ function generatePublicPrivateKeysForRefreshToken(){
             }
         });
 
-        // var processedPubKey = publicKey.slice(27, publicKey.length - 24 - 2);
-
         fs.writeFileSync('rsa-public-key-refresh.pem', publicKey);
         fs.writeFileSync('rsa-private-key-refresh.pem', privateKey);
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+function generatePublicPrivateKeysForRequestResetPasswordToken(){
+    try {
+        const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+            modulusLength: 2048,
+            publicKeyEncoding: {
+            type: 'spki',
+            format: 'pem'
+            },
+            privateKeyEncoding: {
+            type: 'pkcs8',
+            format: 'pem'
+            }
+        });
+
+        fs.writeFileSync('rsa-public-key-password-refresh.pem', publicKey);
+        fs.writeFileSync('rsa-private-key-password-refresh.pem', privateKey);
 
     } catch (error) {
         console.log(error);
@@ -92,6 +106,22 @@ function checkRefreshAuthToken(token){
     });
 }
 
+function checkPasswordRefreshToken(token){
+    return new Promise(function (resolve) {
+        setTimeout(function () {
+            if (token == null) resolve(false);
+  
+            var certPub = fs.readFileSync('rsa-public-key-password-refresh.pem');
+
+            jwt.verify(token, certPub, function(err, decoded) {
+                if (err) resolve(false);
+
+                resolve(decoded);
+            });
+        }, 0);
+    });
+}
+
 function generateAuthToken(userId){
     const certPriv = fs.readFileSync('rsa-private-key.pem');
 
@@ -108,6 +138,17 @@ function generateRefreshAuthToken(userId, tokenVersion){
 
     const token = jwt.sign({ userId: userId, tokenVersion: tokenVersion }, certPriv, {
         expiresIn: '7d', // expires in 7 days
+        algorithm: 'RS256',
+    });
+
+    return token;
+}
+
+function generatePasswordRefreshToken(userId){
+    const certPriv = fs.readFileSync('rsa-private-key-password-refresh.pem');
+
+    const token = jwt.sign({userId: userId}, certPriv, {
+        expiresIn: '1h', // expires in 1 hour
         algorithm: 'RS256',
     });
 
@@ -138,13 +179,16 @@ async function applyUserPermission(permissions, userId){
 }
 
 module.exports = {
-    generatePublicPrivateKeysForToken: generatePublicPrivateKeysForToken,
-    generatePublicPrivateKeysForRefreshToken: generatePublicPrivateKeysForRefreshToken,
-    generateAuthToken: generateAuthToken,
-    generateRefreshAuthToken: generateRefreshAuthToken,
-    checkAuthToken: checkAuthToken,
-    checkRefreshAuthToken: checkRefreshAuthToken,
-    setRefreshToken: setRefreshToken,
-    applyUserPermission: applyUserPermission,
+    generatePublicPrivateKeysForToken,
+    generatePublicPrivateKeysForRefreshToken,
+    generatePublicPrivateKeysForRequestResetPasswordToken,
+    generateAuthToken,
+    generateRefreshAuthToken,
+    generatePasswordRefreshToken,
+    checkAuthToken,
+    checkRefreshAuthToken,
+    checkPasswordRefreshToken,
+    setRefreshToken,
+    applyUserPermission,
 };
 

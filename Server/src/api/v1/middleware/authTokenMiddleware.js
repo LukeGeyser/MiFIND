@@ -10,7 +10,7 @@ async function AuthenticateToken(req, res, next){
             res.status(401);
             customError = new Error();
             customError.CustomError = errors.InvalidToken;
-            next(customError);
+            return next(customError);
         }
 
         const isValidToken = await authService.checkAuthToken(token);
@@ -19,17 +19,46 @@ async function AuthenticateToken(req, res, next){
             res.status(401);
             customError = new Error();
             customError.CustomError = errors.InvalidToken;
-            next(customError);
+            return next(customError);
         }
         
         req.TokenData = isValidToken;
-        next();
+        return next();
 
     } catch (error) {
-        next(error);
+        return next(error);
+    }
+}
+
+async function AuthenticatePasswordRefreshToken(req, res, next){
+    try {
+        const token = req.query.Token;
+
+        if (token == null) {
+            res.status(401);
+            customError = new Error();
+            customError.CustomError = errors.InvalidToken;
+            return next(customError);
+        }
+
+        const isValidToken = await authService.checkPasswordRefreshToken(token);
+
+        if (!isValidToken) {
+            res.status(401);
+            customError = new Error();
+            customError.CustomError = errors.InvalidToken;
+            return next(customError);
+        }
+        
+        req.TokenData = isValidToken;
+        return next();
+
+    } catch (error) {
+        return next(error);
     }
 }
 
 module.exports = {
-    AuthenticateToken
+    AuthenticateToken,
+    AuthenticatePasswordRefreshToken
 };

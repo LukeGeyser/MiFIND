@@ -119,8 +119,6 @@ router.post('/data/insert',
                     // ADD TO DB THE NEW VALUES
                     if (Index != undefined){
                         var temp = await dbDevice.addNewAttributeValue(Index.Id, element.Data);
-                        console.log(element.Data);
-                        console.log(Index);
                     }
                 }
             }

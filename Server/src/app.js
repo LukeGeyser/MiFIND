@@ -7,6 +7,7 @@ const authService = require('./api/v1/services/authService');
 
 // authService.generatePublicPrivateKeysForToken();
 // authService.generatePublicPrivateKeysForRefreshToken();
+// authService.generatePublicPrivateKeysForRequestResetPasswordToken();
 
 const app = express();
 

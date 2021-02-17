@@ -1,12 +1,20 @@
 const dbClient = require('../services/dbServices/dbClient');
 const dbPermissions = require('../services/dbServices/dbPermissions');
 var authService = require('../services/authService');
+const errors = require('../../../constants/errorMessages');
 
 function checkPermissionLogin(permission){
     return async function (req, res, next) {
         var isContained = false;
         try {
             const { username } = req.body;
+
+            if (username == ""){
+                res.status(403);
+                customError = new Error();
+                customError.CustomError = errors.UsrnPwd;
+                return next(customError);
+            }
 
             const { UserId } = await dbClient.getUser(username);
 
@@ -19,15 +27,15 @@ function checkPermissionLogin(permission){
             });
 
             if (!isContained){
-                return res.status(403).send({
-                    Error: 'Access Denied',
-                    Reason: 'Not Authorized to Access this Route'
-                });
+                res.status(403);
+                customError = new Error();
+                customError.CustomError = errors.Unauthorized;
+                return next(customError);
             } else
-                next();
+                return next();
             
         } catch (error) {
-            next(error);
+            return next(error);
         }
 
     };
@@ -41,10 +49,10 @@ function checkPermission(permission){
             const token = header && header.split(' ')[1];
 
             if (token == null){
-                return res.status(401).send({
-                    Error: 'Access Denied',
-                    Reason: 'No Token provided'
-                });
+                res.status(403);
+                customError = new Error();
+                customError.CustomError = errors.InvalidToken;
+                return next(customError);
             }
 
             const { userId } = req.TokenData;
@@ -58,15 +66,15 @@ function checkPermission(permission){
             });
 
             if (!isContained){
-                return res.status(403).send({
-                    Error: 'Access Denied',
-                    Reason: 'Not Authorized to Access this Route'
-                });
+                res.status(403);
+                customError = new Error();
+                customError.CustomError = errors.Unauthorized;
+                return next(customError);
             } else
-                next();
+                return next();
             
         } catch (error) {
-            next(error);
+            return next(error);
         }
 
     };

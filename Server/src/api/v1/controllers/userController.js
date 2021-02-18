@@ -57,6 +57,10 @@ router.post('/resetPassword',
 
         var clientIP = infoService.getIPAddress(req);
 
+        console.log("Browser Info: " + browserInfo.Browser.Name);
+
+        console.log("Client IP: " + clientIP);
+
         var isValidToken = req.TokenData;
         try {
 

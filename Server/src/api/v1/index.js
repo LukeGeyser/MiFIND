@@ -8,7 +8,6 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const rfs = require('rotating-file-stream');
-var path = require('path');
 
 
 // LOCAL IMPORTS
@@ -44,19 +43,40 @@ router.use(helmet());
 
 router.use(cookieParser());
 
-router.use('/auth', speedLimiter, limiter, authController);
+router.use('/auth', 
+    process.env.NODE_ENV == 'production' ? speedLimiter : function (req, res, next){next();}, 
+    process.env.NODE_ENV == 'production' ? limiter : function (req, res, next){next();}, 
+    authController);
 
-router.use('/accounts', speedLimiter, limiter, userController);
+router.use('/accounts', 
+    process.env.NODE_ENV == 'production' ? speedLimiter : function (req, res, next){next();}, 
+    process.env.NODE_ENV == 'production' ? limiter : function (req, res, next){next();}, 
+    userController);
 
-router.use('/sensors', speedLimiter, limiter, sensorController);
+router.use('/sensors', 
+    process.env.NODE_ENV == 'production' ? speedLimiter : function (req, res, next){next();}, 
+    process.env.NODE_ENV == 'production' ? limiter : function (req, res, next){next();}, 
+    sensorController);
 
-router.use('/groups',  speedLimiter, limiter, groupsController);
+router.use('/groups', 
+    process.env.NODE_ENV == 'production' ? speedLimiter : function (req, res, next){next();}, 
+    process.env.NODE_ENV == 'production' ? limiter : function (req, res, next){next();}, 
+    groupsController);
 
-router.use('/permissions', speedLimiter, limiter, permissionController);
+router.use('/permissions', 
+    process.env.NODE_ENV == 'production' ? speedLimiter : function (req, res, next){next();}, 
+    process.env.NODE_ENV == 'production' ? limiter : function (req, res, next){next();}, 
+    permissionController);
 
-router.use('/device', speedLimiter, limiter, deviceController);
+router.use('/device', 
+    process.env.NODE_ENV == 'production' ? speedLimiter : function (req, res, next){next();}, 
+    process.env.NODE_ENV == 'production' ? limiter : function (req, res, next){next();}, 
+    deviceController);
 
-router.use('/bu', speedLimiter, limiter, bUController);
+router.use('/bu', 
+    process.env.NODE_ENV == 'production' ? speedLimiter : function (req, res, next){next();}, 
+    process.env.NODE_ENV == 'production' ? limiter : function (req, res, next){next();}, 
+    bUController);
 
 router.use(errorHandler.notFound);
 

@@ -22,9 +22,6 @@ router.post('/login',
       const { username } = req.body;
       const { password } = req.body;
 
-      console.log(username);
-      console.log(password);
-
       if (username == "" || password == ""){
         res.status(403);
         customError = new Error();

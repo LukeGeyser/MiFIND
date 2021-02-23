@@ -4,6 +4,7 @@ module.exports = {
     development: {
         debug: false,
         client: 'mysql',
+        version: '3.0',
         connection: {
             host : process.env.DB_HOST,
             user : process.env.DB_USER,
@@ -17,6 +18,7 @@ module.exports = {
     production: {
         debug: false,
         client: 'mysql',
+        version: '3.0',
         connection: {
             host : process.env.DB_HOST,
             user : process.env.DB_USER,

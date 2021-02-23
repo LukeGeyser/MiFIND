@@ -1,9 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const bodyParser = require('body-parser');
-const handlebars = require('handlebars');
-const fs = require('fs');
-const path = require('path');
 
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
@@ -17,11 +14,13 @@ const modelValidator = require('../middleware/modelMiddleware');
 const modelsClient = require('../models/clientModel');
 const errors = require('../../../constants/errorMessages');
 const authMiddleware = require('../middleware/authTokenMiddleware');
-const { generatePasswordRefreshToken } = require('../services/authService');
-const { transporter, options } = require('../../../lib/emailTransporter');
-const { resetPWDTemplate } = require('../../../constants/handleBarSources');
+const { generatePasswordRefreshToken, checkPasswordRefreshToken } = require('../services/authService');
 const infoService = require('../services/requestInfoService');
 const dbResetPWD = require('../services/dbServices/dbRefreshPwdToken');
+const authService = require('../services/authService');
+const defaultPerms = require('../../../constants/permissionsIndex');
+const { transporter, options } = require('../../../lib/emailTransporter');
+const { resetPWDTemplate } = require('../../../constants/handleBarSources');
 
 var customError;
 
@@ -52,14 +51,6 @@ router.post('/resetPassword',
     permissionsMiddleware.checkPermission(permissions.ChangePassword),
     modelValidator.validateBodySchema(modelsClient.resetPwdSchema),
     async function (req, res, next) {
-
-        var browserInfo = infoService.getBrowserInfo();
-
-        var clientIP = infoService.getIPAddress(req);
-
-        console.log("Browser Info: " + browserInfo.Browser.Name);
-
-        console.log("Client IP: " + clientIP);
 
         var isValidToken = req.TokenData;
         try {
@@ -115,16 +106,34 @@ router.post('/requestResetPassword',
         try {
             var token = await generatePasswordRefreshToken(req.TokenData.userId);
 
+            var tokenData = await checkPasswordRefreshToken(token);
+
+            var browserInfo = infoService.getBrowserInfo();
+
+            var clientIP = infoService.getIPAddress(req);
+
+            var modelData = {
+                UserId: tokenData.userId,
+                IP: clientIP,
+                CreationDate: new Date(tokenData.iat * 1000).toUTCString(),
+                ExpireDate: new Date(tokenData.exp * 1000).toUTCString(),
+                Token: token,
+                BrowserInfo: JSON.stringify(browserInfo)
+            };
+
+            await dbResetPWD.addRefreshPasswordToken(modelData);
+
             var passwordResetAddress = baseResetURL + '/ResetPassword?Token=' + token; // TODO: Needs to be generated
             var userEmail = req.body.Email;
             let info = await transporter.sendMail(options(userEmail, {passwordResetAddress, userEmail}, 'MiTRACE | Password Reset', resetPWDTemplate));
 
             return res.status(200).send({passwordResetAddress, info});
+            // return res.status(200).send({passwordResetAddress});
+
 
         } catch (error) {
             return next(error);
         }
 });
-
 
 module.exports = router;

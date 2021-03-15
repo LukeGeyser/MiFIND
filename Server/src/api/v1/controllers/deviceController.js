@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const _ = require('underscore');
 
 // LOCAL IMPORTS
 const authService = require('../services/authService');
@@ -14,12 +13,13 @@ const errors = require('../../../constants/errorMessages');
 
 var customError;
 
-router.get('/', 
+router.get('/',
     authMiddleware.AuthenticateToken, 
     permissionsMiddleware.checkPermission(permissions.GetAllDevices), 
     async (req, res, next) => {
         try {
-            var devices = await dbDevice.getAllDevices();
+
+            var devices = await dbDevice.getAllDevicesForUser(req.TokenData.userId);
 
             return res.status(200).json(devices);
 

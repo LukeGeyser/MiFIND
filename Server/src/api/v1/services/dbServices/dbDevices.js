@@ -36,6 +36,22 @@ async function getAllDevices(){
     });
 }
 
+async function getAllDevicesForUser(userID){
+    return new Promise(function (resolve, reject){
+        setTimeout(function () {
+            db.select('Devices.*').from(tableNames.Devices)
+                .join(tableNames.UserDevice, 'Devices.Imei', 'UserDevice.DeviceImei')
+                .where('UserDevice.UserId', userID)
+                .then((data) => {
+                    resolve(data);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        }, 0);
+    });
+}
+
 async function getAllDevicesFromGroup(GroupID){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
@@ -207,4 +223,5 @@ module.exports = {
     getAttributeSensorId,
     addNewAttributeValue,
     getAllDevicesFromGroup,
+    getAllDevicesForUser,
 };

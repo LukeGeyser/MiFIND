@@ -18,5 +18,6 @@ module.exports = {
     DeviceAttributeData: 'DeviceAttributeData',
     Attributes: 'Attributes',
     BussinessUnits: 'BussinessUnits',
-    ResetPasswordTokens: 'ResetPasswordTokens'
+    ResetPasswordTokens: 'ResetPasswordTokens',
+    UserDevice: 'UserDevice',
 };

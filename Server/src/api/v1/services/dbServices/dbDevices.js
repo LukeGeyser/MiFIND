@@ -201,16 +201,6 @@ async function addNewAttributeValue(sensorAttributeId, attributeValue){
     });
 }
 
-// SELECT * 
-// FROM Attributes 
-// INNER JOIN SensorAttributes ON Attributes.Id = SensorAttributes.AttributeId 
-// WHERE SensorAttributes.SensorId = 1
-
-// SELECT * 
-// FROM DeviceAttributeData 
-// INNER JOIN SensorAttributes ON DeviceAttributeData.SensorAtrributeId = SensorAttributes.Id 
-// WHERE SensorAttributes.AttributeId = 1
-
 module.exports = {
     addDevice,
     getAllDevices,

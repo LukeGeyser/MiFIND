@@ -36,12 +36,27 @@ async function getAllDevices(){
     });
 }
 
+async function getAllDevicesFromGroup(GroupID){
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            db.select('*')
+                .from(tableNames.Devices)
+                .where({ GroupID: GroupID })
+                .then((data) => {
+                    resolve(data);
+                }).catch((err) => {
+                    reject(err);
+                });
+        }, 0);
+    });
+}
+
 async function getSingleDevice(imei){
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
             db.select('*')
                 .from(tableNames.Devices)
-                .where({Imei: imei})
+                .where({ Imei: imei })
                 .first()
                 .then((data) => {
                     resolve(data);
@@ -191,4 +206,5 @@ module.exports = {
     getGroupSensor,
     getAttributeSensorId,
     addNewAttributeValue,
+    getAllDevicesFromGroup,
 };

@@ -19,8 +19,38 @@ router.get('/',
     permissionsMiddleware.checkPermission(permissions.GetAllDevices), 
     async (req, res, next) => {
         try {
-
             var devices = await dbDevice.getAllDevices();
+
+            return res.status(200).json(devices);
+
+        } catch (error) {
+            next(error);
+        }
+});
+
+router.get('/groups/:groupID', 
+    authMiddleware.AuthenticateToken, 
+    permissionsMiddleware.checkPermission(permissions.GetAllDevices), 
+    async (req, res, next) => {
+        try {
+
+            if (req.params.groupID == null || req.params.groupID == ''){
+                res.status(400);
+                customError = new Error();
+                customError.CustomError = errors.MissingParamter;
+                return next(customError);
+            }
+
+            var groupID = req.params.groupID;
+
+            var devices = await dbDevice.getAllDevicesFromGroup(groupID);
+
+            if (devices == null || devices.length === 0){
+                res.status(403);
+                customError = new Error();
+                customError.CustomError = errors.NoDevicesInGroup;
+                return next(customError);
+            }
 
             return res.status(200).json(devices);
 

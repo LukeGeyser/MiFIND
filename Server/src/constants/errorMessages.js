@@ -35,4 +35,12 @@ module.exports = {
         Code: 'Not Found',
         Reason: 'Specified Device was not found'
     },
+    MissingParamter: {
+        Code: 'Not Found',
+        Reason: 'A Required Parameter was not given'
+    },
+    NoDevicesInGroup: {
+        Code: 'Not Found',
+        Reason: 'No Devices where found in Specified Group'
+    },
 };

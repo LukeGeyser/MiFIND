@@ -2,9 +2,6 @@ const express = require('express');
 const router = express.Router();
 const bodyParser = require('body-parser');
 
-router.use(bodyParser.urlencoded({ extended: false }));
-router.use(bodyParser.json());
-
 // LOCAL IMPORTS
 const dataService = require('../services/dbServices/dbClient');
 const clientService = require('../services/pwdService');

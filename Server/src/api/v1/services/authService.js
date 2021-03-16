@@ -122,10 +122,10 @@ function checkPasswordRefreshToken(token){
     });
 }
 
-function generateAuthToken(userId){
+function generateAuthToken(userId, tokenVersion){
     const certPriv = fs.readFileSync('rsa-private-key.pem');
 
-    const token = jwt.sign({ userId: userId }, certPriv, {
+    const token = jwt.sign({ userId: userId, tokenVersion: tokenVersion}, certPriv, {
         expiresIn: '1d', // expires in 15 minutes 15m
         algorithm: 'RS256',
     });

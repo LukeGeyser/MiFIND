@@ -9,7 +9,6 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const rfs = require('rotating-file-stream');
 
-
 // LOCAL IMPORTS
 const authController = require('./controllers/authController');
 const userController = require('./controllers/userController');

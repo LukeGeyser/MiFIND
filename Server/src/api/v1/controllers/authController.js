@@ -9,9 +9,6 @@ const permissions = require('../../../constants/permissions');
 const permissionsMiddleware = require('../middleware/permissionMiddleware');
 const errors = require('../../../constants/errorMessages');
 
-router.use(bodyParser.urlencoded({ extended: false }));
-router.use(bodyParser.json());
-
 var customError;
 
 router.post('/login', 
@@ -51,7 +48,7 @@ router.post('/login',
         await dbClient.updateUserTokenVersion(userObject);
 
         var refreshToken = await authService.generateRefreshAuthToken(userObject.UserId, userObject.TokenVersion);
-        var token = await authService.generateAuthToken(userObject.UserId);
+        var token = await authService.generateAuthToken(userObject.UserId, userObject.TokenVersion);
 
         await authService.setRefreshToken(refreshToken, res);
 
@@ -123,13 +120,18 @@ router.post('/refresh_token',
       customError.CustomError = errors.InvalidRefresh;
       return next(customError);
     }
-    var token = await authService.generateAuthToken(user.UserId);
+    
+    var token = await authService.generateAuthToken(user.UserId, TokenVersion);
 
     var tokenCreationDate = new Date();
 
     var tokenExpireDate = new Date(tokenCreationDate.getTime() + 60 * 60000);
 
     var expiresIn = Math.abs(tokenExpireDate - tokenCreationDate) / 1000;
+
+    user.TokenVersion += 1;
+    console.log(user);
+    await dbClient.updateUserTokenVersion(user);
 
     return res.status(200).send({
         authentication: 'true', 

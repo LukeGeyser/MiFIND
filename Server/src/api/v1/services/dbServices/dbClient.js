@@ -1,8 +1,6 @@
 require('dotenv').config();
-var mysql = require('mysql');
 var db = require('../../../../db');
 var tableNames = require('../../../../constants/tableNames');
-const { reject } = require('async');
 
 async function createUser(schema){
     return new Promise(function (resolve, reject) {

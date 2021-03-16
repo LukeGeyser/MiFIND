@@ -1,5 +1,6 @@
 const authService = require('../services/authService');
 const errors = require('../../../constants/errorMessages');
+const dbClient = require('../services/dbServices/dbClient');
 
 async function AuthenticateToken(req, res, next){
     try {
@@ -14,6 +15,15 @@ async function AuthenticateToken(req, res, next){
         }
 
         const isValidToken = await authService.checkAuthToken(token);
+
+        const userObject = await dbClient.getUserById(isValidToken.userId);
+
+        if (userObject.TokenVersion !== isValidToken.tokenVersion){
+            res.status(401);
+            customError = new Error();
+            customError.CustomError = errors.InvalidToken;
+            return next(customError);
+        }
 
         if (!isValidToken) {
             res.status(401);

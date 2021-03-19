@@ -28,6 +28,8 @@ router.post('/login',
 
       const userObject = await dbClient.getUser(username);
 
+      console.log(userObject);
+
       if (!userObject) {
         res.status(403);
         customError = new Error();

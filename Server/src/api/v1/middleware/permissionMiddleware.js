@@ -16,7 +16,16 @@ function checkPermissionLogin(permission){
                 return next(customError);
             }
 
-            const { UserId } = await dbClient.getUser(username);
+            const user = await dbClient.getUser(username);
+
+            if (!user){
+                res.status(403);
+                customError = new Error();
+                customError.CustomError = errors.UsrnPwd;
+                return next(customError);
+            }
+
+            const UserId = user.UserId;
 
             var result = await dbPermissions.getPermissionForUser(UserId);
 

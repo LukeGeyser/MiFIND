@@ -4,6 +4,7 @@ require('dotenv').config();
 const api = require('./api/v1');
 var cookieParser = require('cookie-parser');
 const authService = require('./api/v1/services/authService');
+const cors = require('cors');
 
 // authService.generatePublicPrivateKeysForToken();
 // authService.generatePublicPrivateKeysForRefreshToken();
@@ -18,6 +19,8 @@ app.use(
     extended: false,
   })
 );
+
+app.use(cors());
 
 app.use(bodyParser.json());
 

@@ -16,6 +16,13 @@ async function AuthenticateToken(req, res, next){
 
         const isValidToken = await authService.checkAuthToken(token);
 
+        if (!isValidToken){
+            res.status(401);
+            customError = new Error();
+            customError.CustomError = errors.InvalidToken;
+            return next(customError);
+        }
+
         const userObject = await dbClient.getUserById(isValidToken.userId);
 
         if (userObject.TokenVersion !== isValidToken.tokenVersion){

@@ -14,9 +14,8 @@ import { history } from './_helpers/historyHelper';
 //#region LOCAL IMPORTS
 
 import { Login } from './login/index';
-import { Dashboard } from './dashboard/index';
+import { Dashboard } from './dashboard/Dashboard';
 import { authService } from './_services/authService';
-import { NotFound } from './errors/404';
 
 //#endregion
 
@@ -44,26 +43,18 @@ export class App extends Component{
     return (
       <Router history={ history.HistoryCollection }>
         <div>
-            {token &&
-                <nav className="navbar navbar-expand navbar-dark bg-dark">
-                    <div className="navbar-nav">
-                        <Link to="/dashboard" className="nav-item nav-link">Home</Link>
-                        <Link to="/login" onClick={this.logout} className="nav-item nav-link">Logout</Link>
-                    </div>
-                </nav>
-            }
-            <div className="jumbotron">
-                <div className="container">
-                    <div className="row">
-                        <div className="col-md-6 offset-md-3">
-                            <Route exact path="/dashboard" component={ Dashboard } />
-                            <Route path="/login" component={ Login } />
-                            <Route path="/" component={ Login } exact />
-                            <Route component={ NotFound } />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/* {token &&
+                // <nav className="navbar navbar-expand navbar-dark bg-dark">
+                //     <div className="navbar-nav">
+                //         <Link to="/dashboard" className="nav-item nav-link">Home</Link>
+                //         <Link to="/login" onClick={this.logout} className="nav-item nav-link">Logout</Link>
+                //     </div>
+                // </nav>
+            } */}
+            
+            <Route exact path="/dashboard" component={ Dashboard } />
+            <Route path="/login" component={ Login } />
+            <Route path="/" component={ Login } exact />
         </div>
         {/* <Switch>
         <Route path='/' component={ Login } exact />
@@ -77,3 +68,14 @@ export class App extends Component{
 }
 
 // export default App;
+// eslint-disable-next-line
+{/* <div className="jumbotron">
+    <div className="container">
+        <div className="row">
+            <div className="col-md-6 offset-md-3">
+                
+                <Route component={ NotFound } />
+            </div>
+        </div>
+    </div>
+</div> */}

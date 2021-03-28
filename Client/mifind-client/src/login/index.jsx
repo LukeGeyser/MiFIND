@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { authService } from '../_services/authService'
 import { history } from '../_helpers/historyHelper';
 
-import { Button, Form } from 'react-bootstrap';
+import { Button, Form, Row } from 'react-bootstrap';
 
 export class Login extends Component {
 
@@ -31,9 +31,8 @@ export class Login extends Component {
     async login(event){
         event.preventDefault();
 
-        let token = await authService.Login(this.state.username, this.state.password);
+        await authService.Login(this.state.username, this.state.password);
 
-        console.log(token.access_token);
         history.push('/dashboard');
     }
 
@@ -54,9 +53,17 @@ export class Login extends Component {
                         <Form.Label>Password</Form.Label>
                         <Form.Control type="password" placeholder="Password" value={ this.state.password } onChange={ this.passwordChange } />
                     </Form.Group>
-                    <Button variant="primary" type="submit">
-                        Submit
-                    </Button>
+                    <Form.Group>
+                        <Row className="justify-content-center">
+                            <Button className="col-sm-4" variant="primary" type="submit">
+                                Submit
+                            </Button>
+                            <Button className="col-sm-4 btn-margin" variant="primary" type="submit">
+                                Forgot Password
+                            </Button>
+                        </Row>
+                    </Form.Group>
+                    
                 </Form>
             </div>
         )

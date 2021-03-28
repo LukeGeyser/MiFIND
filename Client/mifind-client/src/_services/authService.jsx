@@ -22,7 +22,6 @@ async function Login(username, password){
     }); 
     localStorage.setItem('tkn', JSON.stringify(loginData.access_token));
     userTokenDetails.next(loginData.access_token);
-    console.log(loginData);
     return loginData;
 }
 
